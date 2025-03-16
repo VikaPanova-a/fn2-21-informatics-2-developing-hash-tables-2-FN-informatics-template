@@ -1,103 +1,237 @@
 # Семинар 2
-
-Данная работа направлена на изучение структур данных типа Hash Table.
-В рамках данной работы вам предстоит выполнить следующие задания:
-
-- [ ] Освежить память в части хэш-таблиц, поработав с [симулятором заполнения хэш-таблицы](https://www.cs.usfca.edu/~galles/visualization/OpenHash.html)
-- [ ] Поэкспериментировать с хэш-таблицами в [симуляторе кастомных хэш-функций](https://iswsa.acm.org/mphf/openDSAPerfectHashAnimation/perfectHashAV.html). Здесь можно выбрать разные хэш-функции, методы разрешения коллизий и т.д.
-- [ ] Прочитайте [полезную статью](https://habr.com/ru/companies/ruvds/articles/747084/), чтобы дальше было проще создать свою хэш-функцию
-- [ ] Далее определите свой вариант **N**, чтобы выполнить задание ниже
-- [ ] Сделайте отчёт о проделанной работе
-
-Выберите ваш метод разрешения коллизий:
-- N % 4 = 0 - **Метод цепочек** 
-- N % 4 = 1 - **Открытая адресация: линейное пробирование**
-- N % 4 = 2 - **Открытая адресация: квадратичное пробирование**
-- N % 4 = 3 - **Открытая адресация: двойное хэширование**
-
-Далее вам необходимо придумать любой класс данных. Неважно, что это будет, главное, чтобы:
-1) Вы придумали его **сами**!
-2) В нём было хотя бы одно поле типа **int** и одно типа **string** (больше - на ваше усмотрение)
-
-Что-то типа такого:
-
-```
-class myTypeOfData{
-	int year;
-	string name;
-	// other variables (if needed)
-};
-```
-Только из названия вашего типа данных, должно быть понятно, что это. То есть типа class Student с номером зачётки и именем, или class Car и т.д.
-
-Далее необходимо реализовать классическую хэш-таблицу, со следующими параметрами. У хэш-таблицы должны быть:
-
-- [ ] Метод вставки элемента
-- [ ] Метод поиска элемента
-- [ ] Метод удаления элемента
-- [ ] Метод вывода хэш-таблицы
-- [ ] Сама хэш-функция (разумеется!)
-
-Самый главный параметр оценки вашей работы - это оригинальность вашей хэш-функции, вы можете использовать разные методы:
-- Комбинирование хэшей полей
-- Полиномиальное хэширование
-- Хэширование на основе битовых операций
-- Хэширование на основе строкового представления
-
-В результате, исходя из того, как вы строите хэш-таблицу, у каждого код будет выглядеть по-своему.
-Шаблоны в итоговой сборке использовать не надо (шаблоны только в примере для абстракции), только стандартные типы данных, по итогу должен получиться файл .cpp примерно такого содержания:
-
-```
-#include <iostream>
+# Панова Виктория ФН2-21Б Вариант 21 Открытая адресация: линейное пробирование
+## 1. Заголовочные файлы и перечисления (enum):
+``` c++ #include <iostream>
+#include <string>
 #include <vector>
 #include <list>
-#include <string>
 
-template <typename K, typename V>
-struct KeyValuePair {
-    K key;
-    V value;
-};
 
-template <typename K, typename V, typename Hash = std::hash<K>>
-class HashTable {
-private:
-    std::vector<std::list<KeyValuePair<K, V>>> table; // Вектор списков для хранения данных
-    size_t capacity; // Размер таблицы
-    Hash hashFunction; // Хэш-функция
-
-    // Внутренние методы
-    size_t getIndex(const K& key) const; // Получить индекс по ключу
-    void rehash(); // Рехэширование
-
-public:
-    // Конструкторы
-    HashTable(size_t initialCapacity = 10);
-    ~HashTable();
-
-    // Основные операции
-    void insert(const K& key, const V& value); // Вставка элемента
-    bool remove(const K& key); // Удаление элемента
-    bool find(const K& key, V& value) const; // Поиск элемента
-    void clear(); // Очистка таблицы
-
-    // Дополнительные методы
-    size_t size() const; // Количество элементов в таблице
-    bool isEmpty() const; // Проверка на пустоту
-    void print() const; // Вывод таблицы
-
-    // Итераторы (опционально)
-    class Iterator;
-    Iterator begin();
-    Iterator end();
+enum SweetType {
+    Candy,
+    Cake,
+    Cookie, 
+    UnknownType
 };
 
 
+enum Flavour {
+    Vanilla,
+    Strawberry,
+    Chocolate,
+    Mint,
+    Lemon,
+    Other
+};
 ```
+## 2.Класс Sweets:
+```c++
+class Sweets {
+public:
+    std::string name;   
+    SweetType type;      
+    Flavour flavour;    
+    size_t calories;       
+    size_t proteins;        
 
-Отчёт о проделанной работе должен содержать:
-- [ ] Скриншот из [симулятора кастомных хэш-функций](https://iswsa.acm.org/mphf/openDSAPerfectHashAnimation/perfectHashAV.html), на котором вы показали, что работали с ним и заполнили его.
-- [ ] Файл .cpp с реализацией хэш-таблицы должен лежать в репозитории
-- [ ] В readme напишите свой вариант по списку и какое задание вам досталось, расскажите алгоритм работы, обоснование выбранных методов хэширования и типов данных
-- [ ] Всегда есть поле для творческой работы, поэтому можно по желанию добавить фичи или интересные доп. функции к хэш-таблице и рассказать о них 
+    Sweets() : name(""), type(SweetType::UnknownType), flavour(Flavour::Other), calories(0), proteins(0) {}
+
+    Sweets(const std::string& name, SweetType type, Flavour flavour, int calories, int proteins)
+        : name(name), type(type), flavour(flavour), calories(calories), proteins(proteins) {}
+```
+* Класс для хранения данных о сладостях. Есть конструкторы по умолчанию и с параметрами, метод print() для вывода информации.
+## 3. Класс HashMap:
+```c++
+class HashMap {
+private:
+    struct KeyValuePair {
+        std::string key;
+        Sweets value;
+        bool isOccupied;
+        bool isDeleted;
+
+        KeyValuePair() : isOccupied(false), isDeleted(false) {}
+        KeyValuePair(const std::string& k, const Sweets& v, bool occupied, bool deleted)
+        : key(k), value(v), isOccupied(occupied), isDeleted(deleted) {}
+    };
+
+    std::vector<KeyValuePair> table;
+    size_t capacity;
+    size_t size;
+    float loadFactorThreshold;
+```
+* Внутренняя структура KeyValuePair хранит ключ, значение и флаги. Вектор table — основное хранилище данных.
+## 4. Хэш-функция Simple string hash:
+```c++
+    size_t hash(const std::string& key) const {
+        size_t hashValue = 0;
+        for (char c : key) {
+            hashValue = hashValue * 31 + c; 
+        }
+        return hashValue % capacity;
+    }
+```
+* Преобразует строку (ключ) в числовой индекс таблицы с помощью полиномиального хэширования.
+## 5. Поиск индекса:
+```c++
+size_t findIndex(const std::string& key) const {
+    size_t index = hash(key);
+    size_t start_index = index;
+    size_t steps = 0;
+
+    while (steps < capacity) {
+        if (!table[index].isOccupied || table[index].isDeleted)
+            break;
+            
+        if (table[index].key == key)
+            break;
+
+        index = (index + 1) % capacity;
+        steps++;
+    }
+
+    return index;
+}
+```
+* Линейное пробирование для поиска свободного места или существующего ключа.
+* Если ячейка свободна или помечена как удаленная - возвращаем индекс для вставки.
+* Если ключ совпадает - возвращаем индекс для обновления/поиска. Иначе - продолжаем поиск.
+## 6. Ресайз таблицы:
+```c++ void resizeAndRehash() {
+        size_t newCapacity = capacity * 2;
+        std::vector<KeyValuePair> newTable(newCapacity);
+
+        for (const auto& pair : table) {
+            if (pair.isOccupied && !pair.isDeleted) {
+                size_t index = hash(pair.key) % newCapacity;
+                while (newTable[index].isOccupied) {
+                    index = (index + 1) % newCapacity;
+                }
+                newTable[index] = pair;
+            }
+        }
+
+        table = std::move(newTable);
+        capacity = newCapacity;
+    }
+```
+* Увеличивает размер таблицы в 2 раза при превышении load factor и перераспределяет элементы.
+## 7.  Конструктор HashMap:
+```c++
+    HashMap(size_t initialCapacity = 10, float loadFactor = 0.7f)
+        : capacity(initialCapacity), size(0), loadFactorThreshold(loadFactor) {
+        table.resize(capacity);
+    }
+```
+* Создаёт хеш-таблицу с начальной ёмкостью 10 и пороговым коэффициентом загрузки 0.7
+## 8.  Метод insert() — добавление элемента:
+```c++
+void insert(const std::string& key, const Sweets& value) {
+    if (static_cast<float>(size) / capacity > loadFactorThreshold) {
+        resizeAndRehash();
+    }
+
+    size_t index = findIndex(key);
+
+    if (!table[index].isOccupied || table[index].isDeleted) {
+        table[index] = KeyValuePair{key, value, true, false};
+        size++;
+    } else if (table[index].key == key) {
+        table[index].value = value; 
+    } else {
+        resizeAndRehash();
+        insert(key, value);
+    }
+}
+```
+## 9. Метод find() — поиск элемента:
+```c++
+bool find(const std::string& key, Sweets& value) const {
+    size_t index = findIndex(key);
+    
+    if (table[index].isOccupied && 
+        !table[index].isDeleted && 
+        table[index].key == key) 
+    {
+        value = table[index].value;
+        return true;
+    }
+    return false;
+}
+```
+## 10. Метод remove() — удаление элемента:
+```c++
+    bool remove(const std::string& key) {
+        size_t index = findIndex(key);
+
+        if (table[index].isOccupied && !table[index].isDeleted) {
+            table[index].isDeleted = true; 
+            size--;
+            return true;
+        }
+        return false;
+    }
+```
+## 11. Вывод содержимого:
+```c++
+    void print() const {
+        std::cout << "HashMap contents:\n";
+        for (size_t i = 0; i < capacity; ++i) {
+            if (table[i].isOccupied && !table[i].isDeleted) {
+                std::cout << "Index " << i << ": "
+                          << "Key: " << table[i].key << ", "
+                          << "Sweet: " << table[i].value.name
+                          << ", Type: " << static_cast<int>(table[i].value.type)
+                          << ", Flavour: " << static_cast<int>(table[i].value.flavour)
+                          << ", Calories: " << table[i].value.calories
+                          << std::endl;
+            }
+        }
+    }
+```
+## 12. Метод clear() — очистка таблицы:
+```c++
+    void clear() {
+    for (size_t i = 0; i < capacity; ++i) {
+        table[i].isOccupied = false;
+        table[i].isDeleted = false;
+    }
+    size = 0; 
+}
+```
+* Сбрасывает все флаги и обнуляет размер. Данные остаются в памяти, но помечаются как неиспользуемые.
+## 13. Основные методы HashMap:
+* insert() — добавляет или обновляет элемент.
+* find() — ищет элемент по ключу.
+* remove() — помечает элемент как удалённый.
+* print() — выводит содержимое таблицы.
+## 14. Пример использования в main():
+```c++
+int main() {
+    HashMap hashMap;
+
+    hashMap.insert("Chocolate Cake", Sweets("Chocolate Cake", Cake, Chocolate, 250, 10));
+    hashMap.insert("Vanilla Ice Cream", Sweets("Vanilla Ice Cream", SweetType::UnknownType, Vanilla, 200, 5));
+    hashMap.insert("Mint Chocolate", Sweets("Mint Chocolate", SweetType::Candy, Flavour::Mint, 150, 7));
+
+    Sweets foundSweet;
+    if (hashMap.find("Chocolate Cake", foundSweet)) {
+        foundSweet.print();
+    }
+
+    hashMap.remove("Vanilla Ice Cream");
+    std::cout << "After removal:\n";
+    hashMap.print();
+
+    return 0;
+}
+```
+## 15. Почему полиномиальное хэширование?
+### Полиномиальное хеширование в этом коде удобно по нескольким причинам:
+* Равномерное распределение ключей:
+Полиномиальная функция (hashValue = hashValue * 31 + c) учитывает порядок символов и их значения, что минимизирует коллизии для строк с похожими символами.
+* Учет всех символов строки:
+Каждый символ вносит уникальный вклад в итоговый хеш. Это выгодно отличает метод от простого суммирования ASCII-кодов, где анаграммы (строки с одинаковыми символами в разном порядке) будут иметь одинаковый хеш.
+## Скриншот из симулятора кастомных хэш-функций
+![Снимок экрана (4)](https://github.com/user-attachments/assets/13e5ba54-f14a-4da3-b902-b2a398b3343b)
 
